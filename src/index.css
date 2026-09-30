@@ -1,0 +1,319 @@
+@import 'tailwindcss';
+
+/* ------------------------------------------------------------------ */
+/* 设计令牌：默认主题「深海蓝」                                          */
+/*                                                                     */
+/* 这里只放默认值。其余主题在下方 @layer base 里覆盖同名 CSS 变量，      */
+/* 工具类（bg-night-900 / text-brand-300 …）引用 var(--color-*) 因此      */
+/* 无需任何改动即可跟着主题走。                                          */
+/* ------------------------------------------------------------------ */
+@theme {
+  /* 夜色背景梯度 */
+  --color-night-950: #040a14;
+  --color-night-900: #061225;
+  --color-night-850: #08182e;
+  --color-night-800: #0b1f3a;
+  --color-night-700: #12304f;
+  --color-night-600: #1b4166;
+
+  /* 主色：天蓝 */
+  --color-brand-200: #bae6fd;
+  --color-brand-300: #7dd3fc;
+  --color-brand-400: #38bdf8;
+  --color-brand-500: #0ea5e9;
+  --color-brand-600: #0284c7;
+
+  /* 辅色：青绿 */
+  --color-aqua-300: #5eead4;
+  --color-aqua-400: #2dd4bf;
+  --color-aqua-500: #14b8a6;
+
+  --radius-card: 18px;
+  --radius-chip: 14px;
+
+  --font-sans:
+    -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei',
+    'Helvetica Neue', Arial, sans-serif;
+}
+
+/* 页面背景的发光与渐变，按主题覆盖 */
+:root {
+  --app-glow-1: rgb(56 189 248 / 0.22);
+  --app-glow-2: rgb(45 212 191 / 0.16);
+  --app-bg-top: #061225;
+  --app-bg-mid: #040a14;
+  --app-bg-bottom: #03070e;
+}
+
+/* ------------------------------------------------------------------ */
+/* 主题调色板                                                          */
+/*                                                                     */
+/* 放在 base 层：@import 'tailwindcss' 声明的层序是                    */
+/* theme → base → components → utilities，所以 base 里的               */
+/* :root[data-theme] 会稳定覆盖 theme 层里 @theme 定义的 :root 默认值。  */
+/* 新增主题时：这里加一段，再去 src/theme/themes.ts 补一条元数据。       */
+/* ------------------------------------------------------------------ */
+@layer base {
+  /* 深海蓝（默认，与 @theme 一致，显式写出便于对照） */
+  :root[data-theme='abyss'] {
+    --color-night-950: #040a14;
+    --color-night-900: #061225;
+    --color-night-850: #08182e;
+    --color-night-800: #0b1f3a;
+    --color-night-700: #12304f;
+    --color-night-600: #1b4166;
+    --color-brand-200: #bae6fd;
+    --color-brand-300: #7dd3fc;
+    --color-brand-400: #38bdf8;
+    --color-brand-500: #0ea5e9;
+    --color-brand-600: #0284c7;
+    --color-aqua-300: #5eead4;
+    --color-aqua-400: #2dd4bf;
+    --color-aqua-500: #14b8a6;
+    --app-glow-1: rgb(56 189 248 / 0.22);
+    --app-glow-2: rgb(45 212 191 / 0.16);
+    --app-bg-top: #061225;
+    --app-bg-mid: #040a14;
+    --app-bg-bottom: #03070e;
+  }
+
+  /* 午夜紫 */
+  :root[data-theme='violet'] {
+    --color-night-950: #08060f;
+    --color-night-900: #0d0a1c;
+    --color-night-850: #120e26;
+    --color-night-800: #181233;
+    --color-night-700: #241a4d;
+    --color-night-600: #332566;
+    --color-brand-200: #ddd6fe;
+    --color-brand-300: #c4b5fd;
+    --color-brand-400: #a78bfa;
+    --color-brand-500: #8b5cf6;
+    --color-brand-600: #7c3aed;
+    --color-aqua-300: #f0abfc;
+    --color-aqua-400: #e879f9;
+    --color-aqua-500: #d946ef;
+    --app-glow-1: rgb(167 139 250 / 0.24);
+    --app-glow-2: rgb(232 121 249 / 0.16);
+    --app-bg-top: #0d0a1c;
+    --app-bg-mid: #08060f;
+    --app-bg-bottom: #050308;
+  }
+
+  /* 熔岩橙 */
+  :root[data-theme='lava'] {
+    --color-night-950: #0f0805;
+    --color-night-900: #1a0d06;
+    --color-night-850: #21110a;
+    --color-night-800: #2b1710;
+    --color-night-700: #3d2116;
+    --color-night-600: #522d1d;
+    --color-brand-200: #fed7aa;
+    --color-brand-300: #fdba74;
+    --color-brand-400: #fb923c;
+    --color-brand-500: #f97316;
+    --color-brand-600: #ea580c;
+    --color-aqua-300: #fcd34d;
+    --color-aqua-400: #fbbf24;
+    --color-aqua-500: #f59e0b;
+    --app-glow-1: rgb(251 146 60 / 0.22);
+    --app-glow-2: rgb(251 191 36 / 0.14);
+    --app-bg-top: #1a0d06;
+    --app-bg-mid: #0f0805;
+    --app-bg-bottom: #080402;
+  }
+
+  /* 森林绿 */
+  :root[data-theme='forest'] {
+    --color-night-950: #030f0a;
+    --color-night-900: #06180f;
+    --color-night-850: #082014;
+    --color-night-800: #0b2a1a;
+    --color-night-700: #113b25;
+    --color-night-600: #1a5233;
+    --color-brand-200: #a7f3d0;
+    --color-brand-300: #6ee7b7;
+    --color-brand-400: #34d399;
+    --color-brand-500: #10b981;
+    --color-brand-600: #059669;
+    --color-aqua-300: #bef264;
+    --color-aqua-400: #a3e635;
+    --color-aqua-500: #84cc16;
+    --app-glow-1: rgb(52 211 153 / 0.22);
+    --app-glow-2: rgb(163 230 53 / 0.14);
+    --app-bg-top: #06180f;
+    --app-bg-mid: #030f0a;
+    --app-bg-bottom: #020a06;
+  }
+
+  /* 玫瑰红 */
+  :root[data-theme='rose'] {
+    --color-night-950: #0f0508;
+    --color-night-900: #190a10;
+    --color-night-850: #210d15;
+    --color-night-800: #2b121b;
+    --color-night-700: #3d1926;
+    --color-night-600: #522233;
+    --color-brand-200: #fecdd3;
+    --color-brand-300: #fda4af;
+    --color-brand-400: #fb7185;
+    --color-brand-500: #f43f5e;
+    --color-brand-600: #e11d48;
+    --color-aqua-300: #f9a8d4;
+    --color-aqua-400: #f472b6;
+    --color-aqua-500: #ec4899;
+    --app-glow-1: rgb(251 113 133 / 0.22);
+    --app-glow-2: rgb(244 114 182 / 0.15);
+    --app-bg-top: #190a10;
+    --app-bg-mid: #0f0508;
+    --app-bg-bottom: #0a0305;
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* 基础层                                                              */
+/* ------------------------------------------------------------------ */
+@layer base {
+  :root {
+    color-scheme: dark;
+  }
+
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+
+  body {
+    margin: 0;
+    font-family: var(--font-sans);
+    color: #e2e8f0;
+    background-color: var(--color-night-950);
+    background-image:
+      radial-gradient(120% 80% at 12% -10%, var(--app-glow-1), transparent 60%),
+      radial-gradient(100% 70% at 100% 0%, var(--app-glow-2), transparent 55%),
+      linear-gradient(180deg, var(--app-bg-top) 0%, var(--app-bg-mid) 55%, var(--app-bg-bottom) 100%);
+    background-attachment: fixed;
+    /* 切主题时底色平滑过渡；渐变本身无法插值，会直接切换 */
+    transition: background-color 0.3s ease;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overscroll-behavior-y: none;
+  }
+
+  /* 用户系统是浅色时，仍保持暗色主题（本应用为暗色专用），
+     只把原生控件（滚动条、输入框）的配色统一到暗色，避免出现白色控件 */
+  @media (prefers-color-scheme: light) {
+    :root {
+      color-scheme: dark;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+
+  /* 去掉数字输入框的上下箭头 */
+  input[type='number']::-webkit-outer-spin-button,
+  input[type='number']::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  input[type='number'] {
+    -moz-appearance: textfield;
+  }
+
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* 动画                                                                */
+/* ------------------------------------------------------------------ */
+
+/* AI 每日激励卡片弹出 */
+@keyframes tip-pop {
+  0% {
+    opacity: 0;
+    transform: translateY(28px) scale(0.92);
+  }
+  60% {
+    opacity: 1;
+    transform: translateY(-4px) scale(1.01);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* 卡片里内容的轻微上浮淡入 */
+@keyframes tip-rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* AI 思考时的呼吸光晕 */
+@keyframes tip-breathe {
+  0%,
+  100% {
+    opacity: 0.45;
+    transform: scale(0.94);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.06);
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* 自定义工具类                                                        */
+/* ------------------------------------------------------------------ */
+
+/* iPhone 安全区 */
+@utility pt-safe {
+  padding-top: env(safe-area-inset-top);
+}
+
+@utility pb-safe {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+@utility px-safe {
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+}
+
+/* 悬浮按钮 / 底部固定元素的安全偏移 */
+@utility bottom-safe {
+  bottom: calc(1.25rem + env(safe-area-inset-bottom));
+}
+
+/* 玻璃拟态卡片 */
+@utility glass {
+  background-color: color-mix(in oklab, var(--color-night-800) 72%, transparent);
+  border: 1px solid color-mix(in oklab, var(--color-brand-400) 14%, transparent);
+  backdrop-filter: blur(14px);
+}
+
+/* 隐藏滚动条但保留滚动 */
+@utility no-scrollbar {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
