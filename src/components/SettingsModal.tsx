@@ -273,16 +273,16 @@ export function SettingsModal() {
 
             <p className="text-[10px] leading-relaxed text-slate-500">
               这些信息会和每日训练内容一起发给 AI 教练，用来给更贴合你身体状况的建议。
-              只存在本机数据库，不会上传到除 DeepSeek 之外的地方。
+              只存在本机数据库，不会上传到除所配置的模型服务之外的任何地方。
             </p>
           </div>
         </section>
 
-        {/* DeepSeek */}
+        {/* AI */}
         <section>
           <h3 className="flex items-center gap-1.5 text-xs font-semibold text-brand-300">
             <Bot size={13} />
-            DeepSeek AI
+            AI 模型
           </h3>
 
           <div className="mt-2.5 space-y-3">
@@ -316,7 +316,7 @@ export function SettingsModal() {
               </div>
 
               <span className="mt-1.5 block text-[10px] leading-relaxed text-slate-500">
-                只保存在本机浏览器 localStorage，不会上传。请求由浏览器直连 DeepSeek 官方接口。
+                只保存在本机浏览器 localStorage，不会上传。请求由浏览器直连下面配置的服务。
               </span>
             </label>
 
@@ -384,7 +384,7 @@ export function SettingsModal() {
               onClick={() =>
                 openConfirm({
                   title: '清空聊天记录',
-                  message: '会删除与 DeepSeek 教练的全部历史对话，设置和训练数据不受影响。',
+                  message: '会删除与 AI 教练的全部历史对话，设置和训练数据不受影响。',
                   confirmText: '清空',
                   danger: true,
                   onConfirm: clearChat,

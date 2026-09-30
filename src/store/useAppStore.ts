@@ -13,6 +13,7 @@ import type {
 } from '../types';
 import { applyTheme, loadTheme, type ThemeId } from '../theme/themes';
 import { loadAiConfig, persistAiConfig, type AiConfig } from '../utils/aiConfig';
+import { loadDailyTip as loadStoredDailyTip, type DailyTip } from '../utils/dailyTip';
 import { todayISO } from '../utils/date';
 import { uid } from '../utils/encode';
 
@@ -102,14 +103,18 @@ interface UiState {
   calendar: boolean;
   settings: boolean;
   ai: boolean;
+  /** AI 每日激励弹窗 */
+  dailyTip: boolean;
   confirm: ConfirmState | null;
   editor: EditorState | null;
 }
 
+/** 每日激励的生成状态：idle 未开始 / loading 请求中 / ready 已就绪 / error 失败 */
+export type DailyTipStatus = 'idle' | 'loading' | 'ready' | 'error';
+
 /* ------------------------------------------------------------------ */
 /* Store                                                               */
 /* ------------------------------------------------------------------ */
-
 
 interface AppState {
   ready: boolean;
@@ -123,10 +128,13 @@ interface AppState {
   chatMessages: ChatMessage[];
   streaming: boolean;
   currentDate: string;
-  /** DeepSeek 配置，存 localStorage */
+  /** AI 配置，存 localStorage */
   aiConfig: AiConfig;
   /** 界面主题，存 localStorage，切换后整站换肤 */
   theme: ThemeId;
+  /** 当天的 AI 激励，存 localStorage */
+  dailyTip: DailyTip | null;
+  dailyTipStatus: DailyTipStatus;
 
   ui: UiState;
   toasts: ToastItem[];
@@ -135,6 +143,11 @@ interface AppState {
 
   updateAiConfig: (patch: Partial<AiConfig>) => void;
   setTheme: (theme: ThemeId) => void;
+
+  /* AI 每日激励：状态在这里，请求流程在 hooks/useDailyTip */
+  setDailyTip: (tip: DailyTip | null, status: DailyTipStatus) => void;
+  openDailyTip: () => void;
+  closeDailyTip: () => void;
 
   /* 日期与训练日 */
   setCurrentDate: (date: string) => void;
@@ -231,8 +244,10 @@ export const useAppStore = create<AppState>((set, get) => {
     currentDate: todayISO(),
     aiConfig: loadAiConfig(),
     theme: loadTheme(),
+    dailyTip: loadStoredDailyTip(),
+    dailyTipStatus: 'idle',
 
-    ui: { calendar: false, settings: false, ai: false, confirm: null, editor: null },
+    ui: { calendar: false, settings: false, ai: false, dailyTip: false, confirm: null, editor: null },
     toasts: [],
 
     /* ---------------- 初始化 ---------------- */
@@ -277,6 +292,13 @@ export const useAppStore = create<AppState>((set, get) => {
       applyTheme(theme);
       set({ theme });
     },
+
+    /* ---------------- AI 每日激励 ---------------- */
+
+    setDailyTip: (dailyTip, dailyTipStatus) => set({ dailyTip, dailyTipStatus }),
+
+    openDailyTip: () => set((state) => ({ ui: { ...state.ui, dailyTip: true } })),
+    closeDailyTip: () => set((state) => ({ ui: { ...state.ui, dailyTip: false } })),
 
     /* ---------------- 日期与训练日 ---------------- */
 

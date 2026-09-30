@@ -4,9 +4,11 @@ import { AiChatDrawer } from "./components/AiChatDrawer";
 import { AiFab } from "./components/AiFab";
 import { CalendarModal } from "./components/CalendarModal";
 import { ConfirmModal } from "./components/ConfirmModal";
+import { DailyTipModal } from "./components/DailyTipModal";
 import { DaySelector } from "./components/DaySelector";
 import { ExerciseEditorModal } from "./components/ExerciseEditorModal";
 import { Header } from "./components/Header";
+import { useDailyTip } from "./hooks/useDailyTip";
 import { MotivationBar } from "./components/MotivationBar";
 import { ProfileStrip } from "./components/ProfileStrip";
 import { RestDay } from "./components/RestDay";
@@ -44,6 +46,9 @@ export default function App() {
   useEffect(() => {
     void init();
   }, [init]);
+
+  // 数据就绪后自动要一次 AI 每日激励：每天一次，没配 Key 时内部直接跳过
+  useDailyTip();
 
   if (!ready) return <Splash />;
 
@@ -148,6 +153,7 @@ export default function App() {
 
       <AiFab />
       <AiChatDrawer />
+      <DailyTipModal />
       <CalendarModal />
       <SettingsModal />
       <ExerciseEditorModal />

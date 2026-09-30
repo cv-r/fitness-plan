@@ -13,7 +13,7 @@ export function AiFab() {
     <motion.button
       type="button"
       onClick={openAi}
-      aria-label="打开 DeepSeek 健身教练"
+      aria-label="打开 AI 健身教练"
       initial={{ opacity: 0, scale: 0.8, y: 12 }}
       animate={{ opacity: 1, scale: 1, y: 0 }}
       transition={{ type: 'spring', stiffness: 320, damping: 26, delay: 0.15 }}

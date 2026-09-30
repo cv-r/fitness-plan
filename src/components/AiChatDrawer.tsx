@@ -1,9 +1,10 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import { Bot, SendHorizontal, Settings2, Square, Trash2, User, X } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { AI_SETUP_HINT, useDeepSeek } from '../hooks/useDeepSeek';
+import { AI_SETUP_HINT, useAiChat } from '../hooks/useAiChat';
 import { useAppStore } from '../store/useAppStore';
 import { cn } from '../utils/cn';
+import { MarkdownMessage } from './MarkdownMessage';
 
 const QUICK_PROMPTS = [
   '今天卧推该加重量吗？',
@@ -20,7 +21,7 @@ export function AiChatDrawer() {
   const clearChat = useAppStore((state) => state.clearChat);
   const messages = useAppStore((state) => state.chatMessages);
 
-  const { send, abort, streaming, configured } = useDeepSeek();
+  const { send, abort, streaming, configured } = useAiChat();
   const [draft, setDraft] = useState('');
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -68,7 +69,7 @@ export function AiChatDrawer() {
           <motion.div
             role="dialog"
             aria-modal="true"
-            aria-label="DeepSeek 健身教练"
+            aria-label="AI 健身教练"
             className="relative z-10 flex h-[88vh] w-full flex-col overflow-hidden rounded-t-[24px] border border-brand-400/15 bg-night-900/95 shadow-2xl shadow-black/60 backdrop-blur-xl sm:h-[80vh] sm:max-w-md sm:rounded-[24px]"
             initial={{ y: '100%', opacity: 0.6 }}
             animate={{ y: 0, opacity: 1 }}
@@ -81,7 +82,7 @@ export function AiChatDrawer() {
                 <Bot size={18} />
               </span>
               <div className="min-w-0 flex-1">
-                <h2 className="truncate text-sm font-semibold text-slate-50">DeepSeek 健身教练</h2>
+                <h2 className="truncate text-sm font-semibold text-slate-50">AI 健身教练</h2>
                 <p className="truncate text-[11px] text-slate-500">
                   {configured ? '已就绪 · 回答简洁专业可执行' : '未配置 API Key'}
                 </p>
@@ -92,7 +93,7 @@ export function AiChatDrawer() {
                 onClick={() =>
                   openConfirm({
                     title: '清空聊天记录',
-                    message: '会删除与 DeepSeek 教练的全部历史对话，训练数据不受影响。',
+                    message: '会删除与 AI 教练的全部历史对话，训练数据不受影响。',
                     confirmText: '清空',
                     danger: true,
                     onConfirm: clearChat,
@@ -155,13 +156,14 @@ export function AiChatDrawer() {
 
                     <div
                       className={cn(
-                        'max-w-[78%] rounded-2xl px-3.5 py-2.5 text-[13px] leading-relaxed whitespace-pre-wrap',
+                        'max-w-[78%] rounded-2xl px-3.5 py-2.5 text-[13px] leading-relaxed',
                         isUser
-                          ? 'rounded-br-sm bg-gradient-to-br from-brand-500 to-brand-600 text-white shadow-lg shadow-brand-500/20'
+                          ? 'rounded-br-sm bg-gradient-to-br from-brand-500 to-brand-600 whitespace-pre-wrap text-white shadow-lg shadow-brand-500/20'
                           : 'rounded-bl-sm border border-brand-400/12 bg-night-850/80 text-slate-200',
                       )}
                     >
-                      {message.content}
+                      {/* 用户输入按纯文本原样显示；AI 回复可能带 Markdown，走渲染 */}
+                      {isUser ? message.content : <MarkdownMessage content={message.content} />}
                       {isStreamingHere && (
                         <span className="ml-0.5 inline-block h-3.5 w-1.5 translate-y-0.5 animate-pulse rounded-sm bg-aqua-400" />
                       )}
@@ -232,7 +234,7 @@ export function AiChatDrawer() {
               </div>
 
               <p className="mt-2 text-center text-[10px] text-slate-600">
-                Key 仅存本机 localStorage · 回复由 DeepSeek 生成，仅供参考
+                Key 仅存本机 localStorage · 回复由 AI 生成，仅供参考
               </p>
             </div>
           </motion.div>

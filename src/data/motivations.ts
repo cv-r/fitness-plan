@@ -21,12 +21,25 @@ export const MOTIVATIONS: string[] = [
  * 用日期字符串做稳定哈希，保证同一天拿到同一条激励语。
  * 不依赖随机数，因此刷新 / 重开 App 都不会变。
  */
-export function pickMotivation(dateISO: string): string {
+function indexFor(dateISO: string): number {
   let hash = 2166136261;
   for (let i = 0; i < dateISO.length; i += 1) {
     hash ^= dateISO.charCodeAt(i);
     hash = Math.imul(hash, 16777619);
   }
-  const index = Math.abs(hash) % MOTIVATIONS.length;
-  return MOTIVATIONS[index];
+  return Math.abs(hash) % MOTIVATIONS.length;
+}
+
+export function pickMotivation(dateISO: string): string {
+  return MOTIVATIONS[indexFor(dateISO)];
+}
+
+/**
+ * 轮播用：从当天固定那条开始，向后取 count 条。
+ * 起点仍然由日期决定，所以同一天的轮播顺序是稳定的。
+ */
+export function pickMotivationRotation(dateISO: string, count = 5): string[] {
+  const start = indexFor(dateISO);
+  const size = Math.min(count, MOTIVATIONS.length);
+  return Array.from({ length: size }, (_, offset) => MOTIVATIONS[(start + offset) % MOTIVATIONS.length]);
 }

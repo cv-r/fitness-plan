@@ -13,7 +13,7 @@ function toApiMessage(message: ChatMessage): { role: ChatMessage['role']; conten
   return { role: message.role, content: message.content };
 }
 
-export interface DeepSeekController {
+export interface AiChatController {
   /** 发送一条消息并流式接收回复 */
   send: (text: string) => Promise<void>;
   /** 中断当前流式请求 */
@@ -23,7 +23,7 @@ export interface DeepSeekController {
   configured: boolean;
 }
 
-export function useDeepSeek(): DeepSeekController {
+export function useAiChat(): AiChatController {
   const streaming = useAppStore((state) => state.streaming);
   const configured = useAppStore((state) => state.aiConfig.apiKey.trim().length > 0);
   const abortRef = useRef<AbortController | null>(null);
@@ -53,7 +53,7 @@ export function useDeepSeek(): DeepSeekController {
         await useAppStore.getState().appendMessage({
           id: uid('msg-'),
           role: 'assistant',
-          content: '还没有配置 DeepSeek API Key。点右上角「设置」→「DeepSeek AI」填入 Key，就能开始聊了。',
+          content: '还没有配置 API Key。点右上角「设置」→「AI 模型」填入 Key，就能开始聊了。',
           createdAt: new Date().toISOString(),
         });
         return;
@@ -177,10 +177,10 @@ export function useDeepSeek(): DeepSeekController {
 }
 
 /** 供 AI 抽屉在无 Key 时展示的引导文案 */
-export const AI_SETUP_HINT = `还没有配置 DeepSeek API Key。
+export const AI_SETUP_HINT = `还没有配置 API Key。
 
 1. 点右上角「设置」
-2. 找到「DeepSeek AI」分组
+2. 找到「AI 模型」分组
 3. 填入你的 Key（存本机 localStorage，不会上传）
 4. 保存后就能开始聊了
 

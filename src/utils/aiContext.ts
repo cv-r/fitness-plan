@@ -1,7 +1,7 @@
 /**
  * 拼给 AI 的上下文。
  *
- * 聊天（useDeepSeek）和每日激励（useDailyTip）都要把「用户是谁 + 练了什么」
+ * 聊天（useAiChat）和每日激励（useDailyTip）都要把「用户是谁 + 练了什么」
  * 交给 AI，所以统一放这里，避免两处各写一份、字段改了漏改一处。
  */
 import { resolveExercises, sumProgress, useAppStore } from '../store/useAppStore';
