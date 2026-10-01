@@ -71,11 +71,19 @@ const BRAND = [0x38, 0xbd, 0xf8];
 const AQUA = [0x2d, 0xd4, 0xbf];
 const INK = [0x04, 0x0a, 0x14];
 
-/** 5×7 点阵字形 */
-const GLYPHS = {
-  Z: ['11111', '00001', '00010', '00100', '01000', '10000', '11111'],
-  R: ['11110', '10001', '10001', '11110', '10100', '10010', '10001'],
-};
+/** 字形点阵：11×7 的哑铃，中间三行是横杆，两端由内向外收窄 */
+const GLYPH = [
+  '..#.....#..',
+  '.##.....##.',
+  '###########',
+  '###########',
+  '###########',
+  '.##.....##.',
+  '..#.....#..',
+];
+
+const GLYPH_W = 11;
+const GLYPH_H = 7;
 
 const SUPERSAMPLE = 3;
 
@@ -105,10 +113,8 @@ function sample(u, v, opts) {
   // 点阵字
   const gx = Math.floor((u * size - glyphOriginX) / unit);
   const gy = Math.floor((v * size - glyphOriginY) / unit);
-  if (gy >= 0 && gy < 7) {
-    if (gx >= 0 && gx < 5 && GLYPHS.Z[gy][gx] === '1') return [...INK, 255];
-    const rx = gx - 6; // Z 宽 5 + 间隔 1
-    if (rx >= 0 && rx < 5 && GLYPHS.R[gy][rx] === '1') return [...INK, 255];
+  if (gy >= 0 && gy < GLYPH_H && gx >= 0 && gx < GLYPH_W && GLYPH[gy][gx] === '#') {
+    return [...INK, 255];
   }
 
   return [...bg, 255];
@@ -116,9 +122,9 @@ function sample(u, v, opts) {
 
 function renderIcon(size) {
   const radius = size * 0.22;
-  const unit = (size * 0.62) / 11; // 两个字形 + 1 个间隔 = 11 单位宽
-  const glyphWidth = unit * 11;
-  const glyphHeight = unit * 7;
+  const unit = (size * 0.62) / GLYPH_W; // 字形占宽度的 62%
+  const glyphWidth = unit * GLYPH_W;
+  const glyphHeight = unit * GLYPH_H;
   const opts = {
     size,
     unit,

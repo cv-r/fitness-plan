@@ -2,6 +2,7 @@ import { useCallback, useRef } from 'react';
 import { useAppStore } from '../store/useAppStore';
 import type { ChatMessage } from '../types';
 import { buildChatContext } from '../utils/aiContext';
+import { streamCompletion } from '../utils/aiRequest';
 import { uid } from '../utils/encode';
 
 const SYSTEM_PROMPT = '你是一位私人健身教练，回答要简洁、专业、可执行。';
@@ -53,7 +54,7 @@ export function useAiChat(): AiChatController {
         await useAppStore.getState().appendMessage({
           id: uid('msg-'),
           role: 'assistant',
-          content: '还没有配置 API Key。点右上角「设置」→「AI 模型」填入 Key，就能开始聊了。',
+          content: '还没有配置 API Key。点右上角「设置」→「AI 接入」填入 Key，就能开始聊了。',
           createdAt: new Date().toISOString(),
         });
         return;
@@ -93,62 +94,16 @@ export function useAiChat(): AiChatController {
       };
 
       try {
-        const response = await fetch(`${baseUrl}/chat/completions`, {
-          method: 'POST',
+        await streamCompletion({
+          config: { apiKey, baseUrl, model },
           signal: controller.signal,
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${apiKey.trim()}`,
-          },
-          body: JSON.stringify({
-            model,
-            stream: true,
-            messages: [
-              { role: 'system', content: SYSTEM_PROMPT },
-              { role: 'system', content: buildChatContext() },
-              ...history,
-            ],
-          }),
+          onDelta: appendDelta,
+          messages: [
+            { role: 'system', content: SYSTEM_PROMPT },
+            { role: 'system', content: buildChatContext() },
+            ...history,
+          ],
         });
-
-        if (!response.ok) {
-          const detail = await response.text().catch(() => '');
-          throw new Error(`请求失败 ${response.status}${detail ? ` · ${detail.slice(0, 200)}` : ''}`);
-        }
-        if (!response.body) throw new Error('当前浏览器不支持流式响应');
-
-        const reader = response.body.getReader();
-        const decoder = new TextDecoder('utf-8');
-        let pending = '';
-        let done = false;
-
-        while (!done) {
-          const chunk = await reader.read();
-          if (chunk.done) break;
-          pending += decoder.decode(chunk.value, { stream: true });
-
-          const lines = pending.split('\n');
-          pending = lines.pop() ?? '';
-
-          for (const raw of lines) {
-            const line = raw.trim();
-            if (!line.startsWith('data:')) continue;
-            const payload = line.slice(5).trim();
-            if (payload === '[DONE]') {
-              done = true;
-              break;
-            }
-            try {
-              const json = JSON.parse(payload) as {
-                choices?: Array<{ delta?: { content?: string } }>;
-              };
-              const delta = json.choices?.[0]?.delta?.content;
-              if (delta) appendDelta(delta);
-            } catch {
-              // 半截 JSON，等下一片
-            }
-          }
-        }
       } catch (error) {
         const aborted = error instanceof DOMException && error.name === 'AbortError';
         const message = aborted
@@ -180,7 +135,7 @@ export function useAiChat(): AiChatController {
 export const AI_SETUP_HINT = `还没有配置 API Key。
 
 1. 点右上角「设置」
-2. 找到「AI 模型」分组
+2. 找到「AI 接入」分组
 3. 填入你的 Key（存本机 localStorage，不会上传）
 4. 保存后就能开始聊了
 

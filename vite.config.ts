@@ -12,8 +12,8 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.svg', 'apple-touch-icon.png'],
       manifest: {
-        name: '张瑞的每日训练计划',
-        short_name: 'ZR 训练',
+        name: '每日训练计划',
+        short_name: '训练计划',
         description: '4 分化训练打卡 · 每日体重 · 日历记录 · AI 教练',
         lang: 'zh-CN',
         start_url: '/',

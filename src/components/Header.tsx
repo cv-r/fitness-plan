@@ -1,4 +1,4 @@
-import { CalendarDays, Settings } from 'lucide-react';
+import { CalendarDays, Dumbbell, Settings } from 'lucide-react';
 import { useLocalDate } from '../hooks/useLocalDate';
 import { useAppStore } from '../store/useAppStore';
 
@@ -13,8 +13,8 @@ export function Header() {
   return (
     <header className="pt-safe px-safe sticky top-0 z-30 border-b border-brand-400/10 bg-night-950/80 backdrop-blur-xl">
       <div className="mx-auto flex w-full max-w-md items-center gap-3 px-4 py-3">
-        <div className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-brand-400 to-aqua-500 text-sm font-black tracking-tight text-night-950 shadow-lg shadow-brand-500/25">
-          ZR
+        <div className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-brand-400 to-aqua-500 text-night-950 shadow-lg shadow-brand-500/25">
+          <Dumbbell size={20} />
         </div>
 
         <div className="min-w-0 flex-1">

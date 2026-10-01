@@ -1,8 +1,10 @@
 import { AnimatePresence, motion } from 'framer-motion';
-import { Bot, SendHorizontal, Settings2, Square, Trash2, User, X } from 'lucide-react';
+import { Bot, Mic, SendHorizontal, Settings2, Square, Trash2, User, X } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { AI_SETUP_HINT, useAiChat } from '../hooks/useAiChat';
+import { useSpeechInput } from '../hooks/useSpeechInput';
 import { useAppStore } from '../store/useAppStore';
+import { MODEL_OPTIONS } from '../utils/aiConfig';
 import { cn } from '../utils/cn';
 import { MarkdownMessage } from './MarkdownMessage';
 
@@ -20,10 +22,27 @@ export function AiChatDrawer() {
   const openConfirm = useAppStore((state) => state.openConfirm);
   const clearChat = useAppStore((state) => state.clearChat);
   const messages = useAppStore((state) => state.chatMessages);
+  const aiConfig = useAppStore((state) => state.aiConfig);
+  const updateAiConfig = useAppStore((state) => state.updateAiConfig);
 
   const { send, abort, streaming, configured } = useAiChat();
   const [draft, setDraft] = useState('');
   const scrollRef = useRef<HTMLDivElement>(null);
+  /** 开始听写时输入框里已有的内容，识别结果接在它后面 */
+  const speechPrefixRef = useRef('');
+
+  const pushToast = useAppStore((state) => state.pushToast);
+
+  const speech = useSpeechInput({
+    onTranscript: (text) => setDraft(speechPrefixRef.current + text),
+    onError: (message) => pushToast(message, 'error'),
+  });
+
+  // 关掉抽屉时别把麦克风留在开着的状态
+  const stopSpeech = speech.stop;
+  useEffect(() => {
+    if (!open) stopSpeech();
+  }, [open, stopSpeech]);
 
   const lastContent = messages.length > 0 ? messages[messages.length - 1].content : '';
 
@@ -181,6 +200,31 @@ export function AiChatDrawer() {
 
             {/* 输入区 */}
             <div className="border-t border-brand-400/10 bg-night-950/60 px-3 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
+              {/* 模型切换：只能从内置列表选，不给手填 */}
+              <div className="mb-2 flex items-center gap-1.5">
+                <span className="shrink-0 text-[10px] text-slate-500">模型</span>
+                {MODEL_OPTIONS.map((option) => {
+                  const active = option.id === aiConfig.model;
+                  return (
+                    <button
+                      key={option.id}
+                      type="button"
+                      onClick={() => updateAiConfig({ model: option.id })}
+                      aria-pressed={active}
+                      title={option.hint}
+                      className={cn(
+                        'rounded-full border px-2.5 py-1 text-[10px] font-medium transition active:scale-95',
+                        active
+                          ? 'border-brand-400/55 bg-brand-500/15 text-brand-200'
+                          : 'border-white/8 bg-night-850/70 text-slate-500 hover:border-brand-400/30 hover:text-slate-300',
+                      )}
+                    >
+                      {option.label}
+                    </button>
+                  );
+                })}
+              </div>
+
               {messages.length === 0 && configured && (
                 <div className="no-scrollbar mb-2.5 flex gap-2 overflow-x-auto">
                   {QUICK_PROMPTS.map((prompt) => (
@@ -210,6 +254,33 @@ export function AiChatDrawer() {
                   placeholder={configured ? '问点什么…' : '先配置 API Key'}
                   className="no-scrollbar max-h-28 min-h-12 flex-1 resize-none rounded-2xl border border-brand-400/15 bg-night-900/80 px-3.5 py-3 text-sm text-slate-100 outline-none transition placeholder:text-slate-600 focus:border-brand-400/55"
                 />
+
+                {/* 语音输入：系统听写转成文字再按文本发出去，模型本身不收音频 */}
+                {speech.supported && (
+                  <button
+                    type="button"
+                    onClick={
+                      speech.listening
+                        ? speech.stop
+                        : () => {
+                            // 已有草稿时接在它后面，不要把用户打的字冲掉
+                            const trimmed = draft.trim();
+                            speechPrefixRef.current = trimmed ? `${trimmed} ` : '';
+                            speech.start();
+                          }
+                    }
+                    aria-label={speech.listening ? '停止语音输入' : '开始语音输入'}
+                    aria-pressed={speech.listening}
+                    className={cn(
+                      'grid h-12 w-12 shrink-0 place-items-center rounded-2xl border transition active:scale-90',
+                      speech.listening
+                        ? 'animate-pulse border-rose-400/45 bg-rose-500/15 text-rose-300'
+                        : 'border-white/10 bg-night-850/80 text-slate-400 hover:border-brand-400/30 hover:text-brand-300',
+                    )}
+                  >
+                    <Mic size={18} />
+                  </button>
+                )}
 
                 {streaming ? (
                   <button

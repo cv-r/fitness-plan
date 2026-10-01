@@ -1,4 +1,4 @@
-import { AlertTriangle, DatabaseZap } from "lucide-react";
+import { AlertTriangle, DatabaseZap, Dumbbell } from "lucide-react";
 import { useEffect } from "react";
 import { AiChatDrawer } from "./components/AiChatDrawer";
 import { AiFab } from "./components/AiFab";
@@ -7,8 +7,10 @@ import { ConfirmModal } from "./components/ConfirmModal";
 import { DailyTipModal } from "./components/DailyTipModal";
 import { DaySelector } from "./components/DaySelector";
 import { ExerciseEditorModal } from "./components/ExerciseEditorModal";
+import { FormGuideSheet } from "./components/FormGuideSheet";
 import { Header } from "./components/Header";
 import { useDailyTip } from "./hooks/useDailyTip";
+import { useFormGuide } from "./hooks/useFormGuide";
 import { MotivationBar } from "./components/MotivationBar";
 import { ProfileStrip } from "./components/ProfileStrip";
 import { RestDay } from "./components/RestDay";
@@ -20,8 +22,9 @@ import { useAppStore } from "./store/useAppStore";
 function Splash() {
   return (
     <div className="flex min-h-dvh flex-col items-center justify-center gap-4">
-      <div className="grid h-16 w-16 animate-pulse place-items-center rounded-3xl bg-gradient-to-br from-brand-400 to-aqua-400 text-lg font-black text-night-950 shadow-2xl shadow-brand-500/25">
-        ZR
+      {/* 与 index.html 的启动占位保持同一套外观和动画，交接时不会跳 */}
+      <div className="grid h-16 w-16 animate-[boot-bob_1.6s_ease-in-out_infinite] place-items-center rounded-3xl bg-gradient-to-br from-brand-400 to-aqua-400 text-night-950 shadow-2xl shadow-brand-500/25">
+        <Dumbbell size={30} />
       </div>
       <p className="text-xs text-slate-500">正在加载训练数据…</p>
     </div>
@@ -49,6 +52,8 @@ export default function App() {
 
   // 数据就绪后自动要一次 AI 每日激励：每天一次，没配 Key 时内部直接跳过
   useDailyTip();
+  // 动作指导的请求流程（点卡片上的 ✨ 时触发）
+  useFormGuide();
 
   if (!ready) return <Splash />;
 
@@ -154,6 +159,7 @@ export default function App() {
       <AiFab />
       <AiChatDrawer />
       <DailyTipModal />
+      <FormGuideSheet />
       <CalendarModal />
       <SettingsModal />
       <ExerciseEditorModal />

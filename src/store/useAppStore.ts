@@ -15,6 +15,7 @@ import { applyTheme, loadTheme, type ThemeId } from '../theme/themes';
 import { loadAiConfig, persistAiConfig, type AiConfig } from '../utils/aiConfig';
 import { loadDailyTip as loadStoredDailyTip, type DailyTip } from '../utils/dailyTip';
 import { todayISO } from '../utils/date';
+import { readFormGuide, type FormGuideTarget } from '../utils/formGuide';
 import { uid } from '../utils/encode';
 
 /* ------------------------------------------------------------------ */
@@ -112,6 +113,9 @@ interface UiState {
 /** 每日激励的生成状态：idle 未开始 / loading 请求中 / ready 已就绪 / error 失败 */
 export type DailyTipStatus = 'idle' | 'loading' | 'ready' | 'error';
 
+/** 动作指导的状态，语义同 DailyTipStatus */
+export type FormGuideStatus = 'idle' | 'loading' | 'ready' | 'error';
+
 /* ------------------------------------------------------------------ */
 /* Store                                                               */
 /* ------------------------------------------------------------------ */
@@ -148,6 +152,17 @@ interface AppState {
   setDailyTip: (tip: DailyTip | null, status: DailyTipStatus) => void;
   openDailyTip: () => void;
   closeDailyTip: () => void;
+
+  /* 动作指导：一次性的姿势问答，不写进聊天记录；请求流程在 hooks/useFormGuide */
+  formGuideTarget: FormGuideTarget | null;
+  formGuideStatus: FormGuideStatus;
+  formGuideContent: string;
+  /** 每次打开或重新生成都自增，用来触发 hook 重新请求 */
+  formGuideNonce: number;
+  openFormGuide: (target: FormGuideTarget) => void;
+  retryFormGuide: () => void;
+  setFormGuide: (patch: { status?: FormGuideStatus; content?: string }) => void;
+  closeFormGuide: () => void;
 
   /* 日期与训练日 */
   setCurrentDate: (date: string) => void;
@@ -247,6 +262,11 @@ export const useAppStore = create<AppState>((set, get) => {
     dailyTip: loadStoredDailyTip(),
     dailyTipStatus: 'idle',
 
+    formGuideTarget: null,
+    formGuideStatus: 'idle',
+    formGuideContent: '',
+    formGuideNonce: 0,
+
     ui: { calendar: false, settings: false, ai: false, dailyTip: false, confirm: null, editor: null },
     toasts: [],
 
@@ -299,6 +319,35 @@ export const useAppStore = create<AppState>((set, get) => {
 
     openDailyTip: () => set((state) => ({ ui: { ...state.ui, dailyTip: true } })),
     closeDailyTip: () => set((state) => ({ ui: { ...state.ui, dailyTip: false } })),
+
+    /* ---------------- 动作指导 ---------------- */
+
+    // 命中缓存就直接显示，省掉一次请求，也不会先闪一下加载态
+    openFormGuide: (target) => {
+      const cached = readFormGuide(target.key, target.sig);
+      set((state) => ({
+        formGuideTarget: target,
+        formGuideStatus: cached ? 'ready' : 'idle',
+        formGuideContent: cached ?? '',
+        formGuideNonce: state.formGuideNonce + 1,
+      }));
+    },
+
+    retryFormGuide: () =>
+      set((state) => ({
+        formGuideStatus: 'idle',
+        formGuideContent: '',
+        formGuideNonce: state.formGuideNonce + 1,
+      })),
+
+    setFormGuide: (patch) =>
+      set((state) => ({
+        formGuideStatus: patch.status ?? state.formGuideStatus,
+        formGuideContent: patch.content ?? state.formGuideContent,
+      })),
+
+    closeFormGuide: () =>
+      set({ formGuideTarget: null, formGuideStatus: 'idle', formGuideContent: '' }),
 
     /* ---------------- 日期与训练日 ---------------- */
 

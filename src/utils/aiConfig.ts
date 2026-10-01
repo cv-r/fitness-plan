@@ -18,7 +18,29 @@ const LS_KEY = 'zr-fitness-plan::ai';
 
 /** 默认指向 DeepSeek 的 OpenAI 兼容接口；可在设置页改成任意兼容服务 */
 export const DEFAULT_BASE_URL = 'https://api.deepseek.com';
-export const DEFAULT_MODEL = 'deepseek-chat';
+
+/**
+ * 可选模型列表。设置页直接列出来点选，省得手打。
+ *
+ * 模型 ID 是服务商定义的字符串，这里只能照抄，所以必然带厂商名；
+ * 界面上用 label 展示，不直接糊 ID 给用户。
+ * 旧的 deepseek-chat / deepseek-reasoner 已于 2026-07-24 停用，换成会 404。
+ *
+ * 要接别的服务商（OpenAI / 通义 / Kimi…）：在设置页改 Base URL，
+ * 再往下面这个数组里加一条即可。
+ */
+export interface ModelOption {
+  id: string;
+  label: string;
+  hint: string;
+}
+
+export const MODEL_OPTIONS: ModelOption[] = [
+  { id: 'deepseek-v4-flash', label: 'V4 Flash', hint: '快、便宜，日常问答够用' },
+  { id: 'deepseek-v4-pro', label: 'V4 Pro', hint: '更强，复杂问题更稳' },
+];
+
+export const DEFAULT_MODEL = MODEL_OPTIONS[0].id;
 
 /** 打包时注入的环境变量兜底值 */
 const ENV_API_KEY = (import.meta.env.VITE_AI_API_KEY ?? '').trim();
@@ -32,6 +54,16 @@ export function hasEnvApiKey(): boolean {
 
 function normalizeBaseUrl(value: string): string {
   return (value.trim() || DEFAULT_BASE_URL).replace(/\/+$/, '');
+}
+
+/**
+ * 模型只能从内置列表里选。
+ * 存过旧模型名（比如已停用的 deepseek-chat）时静默回落到默认，
+ * 否则会拿着一个必然 404 的模型名去请求。
+ */
+export function normalizeModel(value: string): string {
+  const trimmed = value.trim();
+  return MODEL_OPTIONS.some((item) => item.id === trimmed) ? trimmed : DEFAULT_MODEL;
 }
 
 function readStored(): Partial<AiConfig> {
@@ -55,7 +87,7 @@ export function loadAiConfig(): AiConfig {
   return {
     apiKey: (stored.apiKey ?? '').trim() || ENV_API_KEY,
     baseUrl: normalizeBaseUrl(stored.baseUrl ?? '') || normalizeBaseUrl(ENV_BASE_URL),
-    model: (stored.model ?? '').trim() || ENV_MODEL || DEFAULT_MODEL,
+    model: normalizeModel((stored.model ?? '').trim() || ENV_MODEL),
   };
 }
 
@@ -67,7 +99,7 @@ export function persistAiConfig(config: AiConfig): void {
       JSON.stringify({
         apiKey: config.apiKey.trim(),
         baseUrl: normalizeBaseUrl(config.baseUrl),
-        model: config.model.trim() || DEFAULT_MODEL,
+        model: normalizeModel(config.model),
       }),
     );
   } catch {

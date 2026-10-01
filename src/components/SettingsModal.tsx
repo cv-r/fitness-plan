@@ -10,7 +10,7 @@ import {
   type Gender,
   type Goal,
 } from '../types';
-import { clearStoredAiConfig, DEFAULT_BASE_URL, DEFAULT_MODEL, hasEnvApiKey } from '../utils/aiConfig';
+import { clearStoredAiConfig, DEFAULT_BASE_URL, hasEnvApiKey } from '../utils/aiConfig';
 import { cn } from '../utils/cn';
 import { Modal } from './Modal';
 import { OptionChips } from './OptionChips';
@@ -58,7 +58,6 @@ export function SettingsModal() {
   const [height, setHeight] = useState(profile.defaultHeight != null ? String(profile.defaultHeight) : '');
   const [apiKey, setApiKey] = useState(aiConfig.apiKey);
   const [baseUrl, setBaseUrl] = useState(aiConfig.baseUrl);
-  const [model, setModel] = useState(aiConfig.model);
   const [revealKey, setRevealKey] = useState(false);
 
   // 每次打开都从 store 同步一次，避免上次未保存的草稿残留
@@ -73,7 +72,6 @@ export function SettingsModal() {
     setHeight(profile.defaultHeight != null ? String(profile.defaultHeight) : '');
     setApiKey(aiConfig.apiKey);
     setBaseUrl(aiConfig.baseUrl);
-    setModel(aiConfig.model);
     setRevealKey(false);
   }, [open, profile, aiConfig]);
 
@@ -99,10 +97,10 @@ export function SettingsModal() {
       defaultWeight: nextWeight,
       defaultHeight: nextHeight,
     });
+    // 不带 model：模型只在聊天框切换，这里保持原值不动
     updateAiConfig({
       apiKey: apiKey.trim(),
       baseUrl: baseUrl.trim() || DEFAULT_BASE_URL,
-      model: model.trim() || DEFAULT_MODEL,
     });
 
     pushToast('设置已保存', 'success');
@@ -282,7 +280,7 @@ export function SettingsModal() {
         <section>
           <h3 className="flex items-center gap-1.5 text-xs font-semibold text-brand-300">
             <Bot size={13} />
-            AI 模型
+            AI 接入
           </h3>
 
           <div className="mt-2.5 space-y-3">
@@ -320,29 +318,20 @@ export function SettingsModal() {
               </span>
             </label>
 
-            <div className="grid grid-cols-2 gap-3">
-              <label className="block">
-                <span className={LABEL_CLASS}>Base URL</span>
-                <input
-                  value={baseUrl}
-                  onChange={(event) => setBaseUrl(event.target.value)}
-                  placeholder={DEFAULT_BASE_URL}
-                  spellCheck={false}
-                  className={cn(FIELD_CLASS, "text-xs")}
-                />
-              </label>
+            <label className="block">
+              <span className={LABEL_CLASS}>Base URL</span>
+              <input
+                value={baseUrl}
+                onChange={(event) => setBaseUrl(event.target.value)}
+                placeholder={DEFAULT_BASE_URL}
+                spellCheck={false}
+                className={cn(FIELD_CLASS, 'text-xs')}
+              />
+            </label>
 
-              <label className="block">
-                <span className={LABEL_CLASS}>模型</span>
-                <input
-                  value={model}
-                  onChange={(event) => setModel(event.target.value)}
-                  placeholder={DEFAULT_MODEL}
-                  spellCheck={false}
-                  className={cn(FIELD_CLASS, "text-xs")}
-                />
-              </label>
-            </div>
+            <p className="text-[10px] leading-relaxed text-slate-500">
+              模型在聊天框上方直接切换，这里不用填。
+            </p>
 
             {apiKey.trim() !== '' && (
               <button

@@ -1,4 +1,4 @@
-import { Minus, Pencil, Plus, Trash2 } from 'lucide-react';
+import { Minus, Pencil, Plus, Sparkles, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { roundWeight } from '../store/useAppStore';
 import type { ExerciseTemplate } from '../types';
@@ -13,6 +13,8 @@ interface ExerciseCardProps {
   onWeightChange: (weight: number) => void;
   onEdit: () => void;
   onDelete: () => void;
+  /** 唤起 AI 动作指导 */
+  onAiGuide: () => void;
 }
 
 /** 重量展示：保留一位有效小数，2.50 显示成 2.5 */
@@ -29,6 +31,7 @@ export function ExerciseCard({
   onWeightChange,
   onEdit,
   onDelete,
+  onAiGuide,
 }: ExerciseCardProps) {
   const [draft, setDraft] = useState(formatWeight(weight));
 
@@ -93,6 +96,16 @@ export function ExerciseCard({
         </div>
 
         <div className="flex shrink-0 items-center">
+          {/* AI 动作指导：颜色比编辑/删除亮，作为卡片上的主要动作 */}
+          <button
+            type="button"
+            onClick={onAiGuide}
+            aria-label={`AI 指导：${exercise.name}`}
+            className="grid h-9 w-9 place-items-center rounded-xl text-brand-300 transition active:scale-90 hover:bg-brand-500/12 hover:text-brand-200"
+          >
+            <Sparkles size={15} />
+          </button>
+
           <button
             type="button"
             onClick={onEdit}
@@ -139,15 +152,15 @@ export function ExerciseCard({
         </span>
       </div>
 
-      {/* 重量控制 */}
-      <div className="mt-3 flex items-center gap-2 pl-[34px]">
+      {/* 重量控制：整体收窄，把纵向空间让给组数圆点 */}
+      <div className="mt-2 flex items-center gap-1.5 pl-[34px]">
         <button
           type="button"
           onClick={() => step(-1)}
           aria-label="减少重量"
-          className="grid h-11 w-11 shrink-0 place-items-center rounded-xl border border-white/8 bg-night-850/70 text-slate-300 transition active:scale-90 hover:border-brand-400/30 hover:text-brand-200"
+          className="grid h-8 w-8 shrink-0 place-items-center rounded-lg border border-white/8 bg-night-850/70 text-slate-300 transition active:scale-90 hover:border-brand-400/30 hover:text-brand-200"
         >
-          <Minus size={18} />
+          <Minus size={15} />
         </button>
 
         <div className="relative flex-1">
@@ -162,9 +175,9 @@ export function ExerciseCard({
             type="number"
             step={exercise.step}
             aria-label={`${exercise.name} 重量`}
-            className="h-11 w-full rounded-xl border border-brand-400/20 bg-night-900/80 px-3 pr-14 text-center text-base font-semibold text-slate-100 outline-none transition focus:border-brand-400/60"
+            className="h-8 w-full rounded-lg border border-brand-400/20 bg-night-900/80 px-2 pr-11 text-center text-sm font-semibold text-slate-100 outline-none transition focus:border-brand-400/60"
           />
-          <span className="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-[11px] text-slate-500">
+          <span className="pointer-events-none absolute top-1/2 right-2.5 -translate-y-1/2 text-[10px] text-slate-500">
             {isBodyweight ? '自重' : 'kg'}
           </span>
         </div>
@@ -173,9 +186,9 @@ export function ExerciseCard({
           type="button"
           onClick={() => step(1)}
           aria-label="增加重量"
-          className="grid h-11 w-11 shrink-0 place-items-center rounded-xl border border-white/8 bg-night-850/70 text-slate-300 transition active:scale-90 hover:border-brand-400/30 hover:text-brand-200"
+          className="grid h-8 w-8 shrink-0 place-items-center rounded-lg border border-white/8 bg-night-850/70 text-slate-300 transition active:scale-90 hover:border-brand-400/30 hover:text-brand-200"
         >
-          <Plus size={18} />
+          <Plus size={15} />
         </button>
       </div>
     </article>

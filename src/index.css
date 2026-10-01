@@ -184,10 +184,14 @@
     height: 100%;
   }
 
-  body {
-    margin: 0;
-    font-family: var(--font-sans);
-    color: #e2e8f0;
+  /*
+   * 背景必须画在 html（根元素）上。
+   * 根元素的背景会被铺满整个 canvas —— 包括 iPhone 底部 home indicator 那条安全区，
+   * 以及 iOS 橡皮筋回弹时露出来的区域。
+   * 如果画在 body 上，body 只有视口那么高，滚动到下方就会露出 canvas 底色。
+   * 安全区的 env() 只负责给「内容」让位（pt-safe / bottom-safe 等），不参与背景绘制。
+   */
+  html {
     background-color: var(--color-night-950);
     background-image:
       radial-gradient(120% 80% at 12% -10%, var(--app-glow-1), transparent 60%),
@@ -196,6 +200,13 @@
     background-attachment: fixed;
     /* 切主题时底色平滑过渡；渐变本身无法插值，会直接切换 */
     transition: background-color 0.3s ease;
+  }
+
+  body {
+    margin: 0;
+    font-family: var(--font-sans);
+    color: #e2e8f0;
+    /* 背景已交给 html，body 保持透明，避免叠出两层背景 */
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     overscroll-behavior-y: none;
@@ -264,6 +275,19 @@
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+/* 启动占位里哑铃图标的浮动。
+   同一组关键帧在 index.html 的 <style> 里也有一份：首屏时本文件（打包产物）还没就绪，
+   那边必须自带一份，改这里记得同步（见 CLAUDE.md）。 */
+@keyframes boot-bob {
+  0%,
+  100% {
+    transform: translateY(4px) scale(0.96);
+  }
+  50% {
+    transform: translateY(-4px) scale(1.03);
   }
 }
 

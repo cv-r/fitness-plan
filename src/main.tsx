@@ -12,6 +12,10 @@ if (!container) {
   throw new Error('找不到 #root 挂载点');
 }
 
+// 移除 index.html 里的启动占位。
+// 它的背景和应用背景是同一套配方，所以移除的瞬间不会闪色。
+document.getElementById('boot')?.remove();
+
 createRoot(container).render(
   <StrictMode>
     <App />

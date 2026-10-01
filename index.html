@@ -13,16 +13,186 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <meta name="apple-mobile-web-app-title" content="ZR 训练" />
+    <meta name="apple-mobile-web-app-title" content="训练计划" />
     <link rel="apple-touch-icon" href="/pwa-192x192.png" />
 
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="mask-icon" href="/favicon.svg" color="#38bdf8" />
 
     <title>每日训练计划</title>
+
+    <!--
+      首屏启动占位。
+      主题 CSS 属于打包产物（构建时是独立 <link>，dev 下由 JS 注入），首屏还没就绪，
+      所以这里的配色在下面 <style> 里自带一份，不能依赖 var(--color-*)。
+      改主题调色板时记得同步这里的变量（见 CLAUDE.md）。
+    -->
+    <script>
+      (function () {
+        var THEMES = ['abyss', 'violet', 'lava', 'forest', 'rose'];
+        var THEME_COLOR = {
+          abyss: '#040a14',
+          violet: '#08060f',
+          lava: '#0f0805',
+          forest: '#030f0a',
+          rose: '#0f0508',
+        };
+        var id = 'abyss';
+        try {
+          var saved = localStorage.getItem('zr-fitness-plan::theme');
+          if (THEMES.indexOf(saved) >= 0) id = saved;
+        } catch (e) {
+          /* 隐私模式读不到，用默认主题 */
+        }
+        document.documentElement.setAttribute('data-theme', id);
+        var meta = document.querySelector('meta[name="theme-color"]');
+        if (meta) meta.setAttribute('content', THEME_COLOR[id]);
+      })();
+    </script>
+
+    <style>
+      /* 各主题的启动占位配色（与 src/index.css 的调色板保持一致） */
+      html[data-theme='abyss'] {
+        --boot-bg-top: #061225;
+        --boot-bg: #040a14;
+        --boot-bg-bottom: #03070e;
+        --boot-glow-1: rgb(56 189 248 / 0.22);
+        --boot-glow-2: rgb(45 212 191 / 0.16);
+        --boot-ink-1: #38bdf8;
+        --boot-ink-2: #2dd4bf;
+      }
+      html[data-theme='violet'] {
+        --boot-bg-top: #0d0a1c;
+        --boot-bg: #08060f;
+        --boot-bg-bottom: #050308;
+        --boot-glow-1: rgb(167 139 250 / 0.24);
+        --boot-glow-2: rgb(232 121 249 / 0.16);
+        --boot-ink-1: #a78bfa;
+        --boot-ink-2: #e879f9;
+      }
+      html[data-theme='lava'] {
+        --boot-bg-top: #1a0d06;
+        --boot-bg: #0f0805;
+        --boot-bg-bottom: #080402;
+        --boot-glow-1: rgb(251 146 60 / 0.22);
+        --boot-glow-2: rgb(251 191 36 / 0.14);
+        --boot-ink-1: #fb923c;
+        --boot-ink-2: #fbbf24;
+      }
+      html[data-theme='forest'] {
+        --boot-bg-top: #06180f;
+        --boot-bg: #030f0a;
+        --boot-bg-bottom: #020a06;
+        --boot-glow-1: rgb(52 211 153 / 0.22);
+        --boot-glow-2: rgb(163 230 53 / 0.14);
+        --boot-ink-1: #34d399;
+        --boot-ink-2: #a3e635;
+      }
+      html[data-theme='rose'] {
+        --boot-bg-top: #190a10;
+        --boot-bg: #0f0508;
+        --boot-bg-bottom: #0a0305;
+        --boot-glow-1: rgb(251 113 133 / 0.22);
+        --boot-glow-2: rgb(244 114 182 / 0.15);
+        --boot-ink-1: #fb7185;
+        --boot-ink-2: #f472b6;
+      }
+
+      /*
+        背景铺在 html（根元素）上：根元素的背景会铺满整个 canvas，
+        包括底部 home indicator 安全区和 iOS 回弹区域。
+        这样 JS 还没跑、或 #root 还没内容时也不会露白，滚动到底也不会露边。
+        配方与 src/index.css 的 html 规则一致，React 接管时不会跳色。
+      */
+      html {
+        background-color: var(--boot-bg);
+        background-image:
+          radial-gradient(120% 80% at 12% -10%, var(--boot-glow-1), transparent 60%),
+          radial-gradient(100% 70% at 100% 0%, var(--boot-glow-2), transparent 55%),
+          linear-gradient(
+            180deg,
+            var(--boot-bg-top) 0%,
+            var(--boot-bg) 55%,
+            var(--boot-bg-bottom) 100%
+          );
+        background-attachment: fixed;
+      }
+      body {
+        margin: 0;
+      }
+
+      /* 背景由上面的 html 规则铺满 canvas，这里只负责居中占位内容 */
+      #boot {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 1rem;
+        font-family:
+          -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei',
+          'Helvetica Neue', Arial, sans-serif;
+      }
+
+      #boot .boot-mark {
+        display: grid;
+        place-items: center;
+        width: 4rem;
+        height: 4rem;
+        border-radius: 1.5rem;
+        color: var(--boot-bg);
+        background-image: linear-gradient(to bottom right, var(--boot-ink-1), var(--boot-ink-2));
+        box-shadow: 0 20px 45px -12px var(--boot-glow-1);
+        animation: boot-bob 1.6s ease-in-out infinite;
+      }
+      #boot .boot-mark svg {
+        width: 1.875rem;
+        height: auto;
+      }
+
+      #boot .boot-text {
+        margin: 0;
+        font-size: 0.75rem;
+        line-height: 1.5;
+        color: #64748b;
+      }
+
+      @keyframes boot-bob {
+        0%,
+        100% {
+          transform: translateY(4px) scale(0.96);
+        }
+        50% {
+          transform: translateY(-4px) scale(1.03);
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        #boot .boot-mark {
+          animation: none;
+        }
+      }
+    </style>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <!-- React 挂载后会连同这个占位一起清掉（见 src/main.tsx） -->
+      <div id="boot">
+        <div class="boot-mark">
+          <svg viewBox="0 0 308 196" fill="currentColor" aria-hidden="true">
+            <rect x="0" y="56" width="28" height="84" rx="9" />
+            <rect x="28" y="28" width="28" height="140" rx="9" />
+            <rect x="56" y="0" width="28" height="196" rx="9" />
+            <rect x="84" y="56" width="140" height="84" rx="9" />
+            <rect x="224" y="0" width="28" height="196" rx="9" />
+            <rect x="252" y="28" width="28" height="140" rx="9" />
+            <rect x="280" y="56" width="28" height="84" rx="9" />
+          </svg>
+        </div>
+        <p class="boot-text">正在加载训练数据…</p>
+      </div>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

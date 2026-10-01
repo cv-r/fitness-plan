@@ -7,6 +7,7 @@
 import { resolveExercises, sumProgress, useAppStore } from '../store/useAppStore';
 import type { UserProfile } from '../types';
 import { formatChineseDate, todayISO, yesterdayISO } from './date';
+import type { FormGuideTarget } from './formGuide';
 
 /** 个人资料 -> 若干行文字，没填的字段直接跳过 */
 export function profileLines(profile: UserProfile, todayWeight?: number): string[] {
@@ -65,6 +66,34 @@ export function buildChatContext(): string {
 
 export const DAILY_TIP_SYSTEM_PROMPT =
   '你是一位私人健身教练，语气像并肩训练的伙伴：热血但不浮夸，具体而不空泛。';
+
+export const FORM_GUIDE_SYSTEM_PROMPT =
+  '你是一位严谨的健身教练，讲解动作要领时只讲可靠、可执行的内容，不编造数据。';
+
+/**
+ * 动作指导用：让模型针对某一个动作（或某个训练日的热身）讲清正确做法。
+ * 内容会渲染成 Markdown，所以允许小标题和列表。
+ */
+export function buildFormGuidePrompt(target: FormGuideTarget): string {
+  const { profile } = useAppStore.getState();
+
+  return [
+    `我马上要做这个项目，请给我动作指导：${target.title}`,
+    '',
+    '【项目信息】',
+    ...target.details,
+    '',
+    '【我的资料】',
+    ...profileLines(profile),
+    '',
+    '请按要求给出指导：',
+    '1. 第一句说清这个项目主要练到什么，以及为什么值得练。',
+    '2. 然后按「起始姿势 → 发力过程 → 呼吸节奏 → 常见错误」四段展开，每段 1~3 句，要具体到身体部位和角度。',
+    '3. 结合我的训练目标和经验水平，提醒重量或强度上的注意事项。',
+    '4. 如果这个项目有容易受伤的环节，单独用一句话点名风险。',
+    '5. 用 Markdown 组织（可以用小标题和列表），总长度控制在 350 字以内，不要寒暄。',
+  ].join('\n');
+}
 
 /**
  * 每日激励用：把「昨天的训练 + 今天的安排 + 用户资料」交给 AI，

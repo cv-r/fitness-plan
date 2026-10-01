@@ -1,8 +1,9 @@
 import { motion } from 'framer-motion';
-import { Flame, Plus, RefreshCw, RotateCcw } from 'lucide-react';
+import { Flame, Plus, RefreshCw, RotateCcw, Sparkles } from 'lucide-react';
 import { resolveExercises, sumProgress, useAppStore } from '../store/useAppStore';
 import type { DayRecord, DayTemplate } from '../types';
 import { cn } from '../utils/cn';
+import { exerciseTarget, warmupTarget } from '../utils/formGuide';
 import { ExerciseCard } from './ExerciseCard';
 
 interface TrainingDayProps {
@@ -18,6 +19,7 @@ export function TrainingDay({ template, record, onReselect, onReset }: TrainingD
   const openEditor = useAppStore((state) => state.openEditor);
   const openConfirm = useAppStore((state) => state.openConfirm);
   const deleteExercise = useAppStore((state) => state.deleteExercise);
+  const openFormGuide = useAppStore((state) => state.openFormGuide);
 
   const items = resolveExercises(template, record);
   const progress = sumProgress(items);
@@ -73,9 +75,19 @@ export function TrainingDay({ template, record, onReselect, onReset }: TrainingD
           {/* 热身 */}
           {template.warmup && (
             <div className="mt-3 rounded-chip border border-brand-400/12 bg-brand-500/6 px-3 py-2.5">
-              <p className="text-[10px] font-semibold tracking-wide text-brand-300/80 uppercase">
-                热身
-              </p>
+              <div className="flex items-center justify-between gap-2">
+                <p className="text-[10px] font-semibold tracking-wide text-brand-300/80 uppercase">
+                  热身
+                </p>
+                <button
+                  type="button"
+                  onClick={() => openFormGuide(warmupTarget(template))}
+                  aria-label={`AI 指导：${template.label} 热身`}
+                  className="-my-1 grid h-8 w-8 shrink-0 place-items-center rounded-lg text-brand-300 transition active:scale-90 hover:bg-brand-500/12 hover:text-brand-200"
+                >
+                  <Sparkles size={14} />
+                </button>
+              </div>
               <p className="mt-1 text-[11px] leading-relaxed text-slate-300">{template.warmup}</p>
             </div>
           )}
@@ -127,6 +139,7 @@ export function TrainingDay({ template, record, onReselect, onReset }: TrainingD
             onWeightChange={(weight) => void setExerciseWeight(item.template.id, weight)}
             onEdit={() => openEditor({ dayTemplateId: template.id, exercise: item.template })}
             onDelete={() => handleDelete(item.template.id, item.template.name)}
+            onAiGuide={() => openFormGuide(exerciseTarget(item.template, item.weight))}
           />
         ))}
 

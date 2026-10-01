@@ -1,6 +1,6 @@
 import type { DayTemplate } from '../types';
 
-/** 张瑞的默认 4 分化训练计划 */
+/** 默认 4 分化训练计划 */
 export const DEFAULT_PLAN: DayTemplate[] = [
   {
     id: 'day1',
