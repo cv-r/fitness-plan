@@ -152,8 +152,10 @@ function stripProfileId(row: ProfileRow): UserProfile {
 
 export async function saveProfile(profile: UserProfile): Promise<void> {
   const row: ProfileRow = { id: PROFILE_ID, ...profile };
-  return withDb(
-    () => db.profile.put(row),
+  return withDb<void>(
+    async () => {
+      await db.profile.put(row);
+    },
     () => {
       const snapshot = readSnapshot();
       writeSnapshot({ ...snapshot, profile: row });
@@ -162,7 +164,7 @@ export async function saveProfile(profile: UserProfile): Promise<void> {
 }
 
 export async function saveTemplates(templates: DayTemplate[]): Promise<void> {
-  return withDb(
+  return withDb<void>(
     async () => {
       await db.transaction('rw', db.dayTemplates, async () => {
         await db.dayTemplates.clear();
@@ -177,8 +179,10 @@ export async function saveTemplates(templates: DayTemplate[]): Promise<void> {
 }
 
 export async function saveRecord(record: DayRecord): Promise<void> {
-  return withDb(
-    () => db.dayRecords.put(record),
+  return withDb<void>(
+    async () => {
+      await db.dayRecords.put(record);
+    },
     () => {
       const snapshot = readSnapshot();
       const dayRecords = snapshot.dayRecords.filter((item) => item.date !== record.date);
@@ -188,7 +192,7 @@ export async function saveRecord(record: DayRecord): Promise<void> {
 }
 
 export async function deleteRecord(date: string): Promise<void> {
-  return withDb(
+  return withDb<void>(
     () => db.dayRecords.delete(date),
     () => {
       const snapshot = readSnapshot();
@@ -198,8 +202,10 @@ export async function deleteRecord(date: string): Promise<void> {
 }
 
 export async function saveRecords(records: DayRecord[]): Promise<void> {
-  return withDb(
-    () => db.dayRecords.bulkPut(records),
+  return withDb<void>(
+    async () => {
+      await db.dayRecords.bulkPut(records);
+    },
     () => {
       const snapshot = readSnapshot();
       const touched = new Set(records.map((item) => item.date));
@@ -210,7 +216,7 @@ export async function saveRecords(records: DayRecord[]): Promise<void> {
 }
 
 export async function deleteRecords(dates: string[]): Promise<void> {
-  return withDb(
+  return withDb<void>(
     () => db.dayRecords.bulkDelete(dates),
     () => {
       const snapshot = readSnapshot();
@@ -221,8 +227,14 @@ export async function deleteRecords(dates: string[]): Promise<void> {
 }
 
 export async function saveWeight(record: WeightRecord | null, date: string): Promise<void> {
-  return withDb(
-    () => (record ? db.weights.put(record) : db.weights.delete(date)),
+  return withDb<void>(
+    async () => {
+      if (record) {
+        await db.weights.put(record);
+      } else {
+        await db.weights.delete(date);
+      }
+    },
     () => {
       const snapshot = readSnapshot();
       const weights = snapshot.weights.filter((item) => item.date !== date);
@@ -232,8 +244,10 @@ export async function saveWeight(record: WeightRecord | null, date: string): Pro
 }
 
 export async function saveMessage(message: ChatMessage): Promise<void> {
-  return withDb(
-    () => db.chatMessages.put(message),
+  return withDb<void>(
+    async () => {
+      await db.chatMessages.put(message);
+    },
     () => {
       const snapshot = readSnapshot();
       const chatMessages = snapshot.chatMessages.filter((item) => item.id !== message.id);
@@ -243,7 +257,7 @@ export async function saveMessage(message: ChatMessage): Promise<void> {
 }
 
 export async function clearMessages(): Promise<void> {
-  return withDb(
+  return withDb<void>(
     () => db.chatMessages.clear(),
     () => {
       const snapshot = readSnapshot();
